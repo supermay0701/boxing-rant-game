@@ -1,4 +1,4 @@
-import type { CharacterSetup, JerseyConfig } from '../setup/types';
+import type { CharacterSetup } from '../setup/types';
 
 export interface GameStats {
   totalHits: number;
