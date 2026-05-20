@@ -1,29 +1,48 @@
 import { drawRing, ringBounds, RING_SIZE } from './Ring';
 import { drawCharacter, gloveTipPosition, CHARACTER_BODY_R } from './Character';
+import { drawDamageOverlay } from './DamageStateOverlay';
 import { GameLoop } from './GameLoop';
 import { Puncher } from './Puncher';
 import { Victim } from './Victim';
 import { circlesIntersect } from './HitDetect';
+import { ComboTracker } from './ComboTracker';
+import { Timer } from './Timer';
+import { SpeechBubbleSystem } from './SpeechBubble';
+import { HUD } from './HUD';
+import { Recorder } from './Recorder';
+import { audio } from '../shared/Audio';
 import type { SetupData } from '../setup/types';
 
-export interface GameSceneCallbacks {
-  onHit?: () => void;
+export interface GameStats {
+  totalHits: number;
+  maxCombo: number;
+  damageLevel: number;
+  hitTimestamps: number[];
 }
 
 export class GameScene {
   private canvas: HTMLCanvasElement;
+  private container: HTMLElement;
   private ctx: CanvasRenderingContext2D;
   private loop: GameLoop;
   private data: SetupData;
   private puncher: Puncher;
   private victim: Victim;
   private lastResolvedStrikeId = 0;
-  private cbs: GameSceneCallbacks;
+  private timeMs = 0;
+  private combo: ComboTracker;
+  private timer: Timer;
+  private speech: SpeechBubbleSystem;
+  private hud: HUD;
+  private recorder: Recorder;
+  private hitTimestamps: number[] = [];
+  private onFinish: (stats: GameStats, blob: Blob | null) => void;
 
-  constructor(root: HTMLElement, data: SetupData, cbs: GameSceneCallbacks = {}) {
+  constructor(root: HTMLElement, data: SetupData, onFinish: (stats: GameStats, blob: Blob | null) => void) {
     this.data = data;
-    this.cbs = cbs;
+    this.onFinish = onFinish;
     root.innerHTML = `<div class="game-container"><canvas id="game-canvas" width="${RING_SIZE}" height="${RING_SIZE}"></canvas></div>`;
+    this.container = root.querySelector('.game-container') as HTMLElement;
     this.canvas = root.querySelector('#game-canvas') as HTMLCanvasElement;
     this.ctx = this.canvas.getContext('2d')!;
 
@@ -31,34 +50,85 @@ export class GameScene {
     this.victim  = new Victim(360, 340);
     this.victim.setBounds(ringBounds());
 
+    this.combo = new ComboTracker((m) => this.shake(m));
+    this.timer = new Timer(data.duration, () => this.finish());
+    this.speech = new SpeechBubbleSystem(data.puncher.talks);
+    this.hud = new HUD(this.container);
+    this.recorder = new Recorder(this.canvas);
+
     this.loop = new GameLoop(this.ctx, (d) => this.update(d), (ctx) => this.render(ctx));
+
+    audio.preload();
   }
 
-  start(): void { this.loop.start(); }
-  stop(): void { this.loop.stop(); }
+  start(): void {
+    audio.play('bgm');
+    this.recorder.start();
+    this.loop.start();
+  }
+
+  stop(): void {
+    this.loop.stop();
+    audio.stop('bgm');
+    this.hud.destroy();
+  }
+
+  private async finish(): Promise<void> {
+    this.loop.stop();
+    audio.stop('bgm');
+    const blob = await this.recorder.stop();
+    const stats: GameStats = {
+      totalHits: this.victim.hitsTaken,
+      maxCombo: this.combo.maxCombo,
+      damageLevel: this.computeDamageLevel(),
+      hitTimestamps: [...this.hitTimestamps],
+    };
+    this.hud.destroy();
+    this.onFinish(stats, blob);
+  }
+
+  private computeDamageLevel(): number {
+    const h = this.victim.hitsTaken;
+    if (h >= 30) return 4;
+    if (h >= 20) return 3;
+    if (h >= 10) return 2;
+    if (h >=  5) return 1;
+    return 0;
+  }
 
   private update(deltaMs: number): void {
+    this.timeMs += deltaMs;
+    this.timer.tick(deltaMs);
     this.puncher.update(deltaMs, { x: this.victim.x, y: this.victim.y });
     this.victim.update(deltaMs, { x: this.puncher.x, y: this.puncher.y });
+    this.combo.tick(deltaMs);
+    this.speech.tick(deltaMs);
 
     if (this.puncher.state === 'strike' && this.puncher.currentStrikeId() > this.lastResolvedStrikeId) {
-      const glove = gloveTipPosition(this.puncherRenderInput(), 'R');
+      const glove = gloveTipPosition(this.puncherRender(), 'R');
       const victimCircle = { x: this.victim.x, y: this.victim.y, r: CHARACTER_BODY_R };
       if (circlesIntersect(glove, victimCircle)) {
         this.victim.takeHit({ x: this.puncher.x, y: this.puncher.y });
-        this.cbs.onHit?.();
+        this.combo.hit();
+        this.hitTimestamps.push(this.timeMs);
+        this.speech.maybeTrigger({ x: this.puncher.x, y: this.puncher.y });
+        audio.play('hit');
         this.lastResolvedStrikeId = this.puncher.currentStrikeId();
       }
     }
+
+    this.hud.update(this.timer.remainingMs, this.victim.hitsTaken, this.combo.combo);
   }
 
   private render(ctx: CanvasRenderingContext2D): void {
     drawRing(ctx);
-    drawCharacter(ctx, this.puncherRenderInput());
-    drawCharacter(ctx, this.victimRenderInput());
+    drawCharacter(ctx, this.puncherRender());
+    drawCharacter(ctx, this.victimRender());
+    drawDamageOverlay(ctx, this.victim.x, this.victim.y - 50, this.victim.hitsTaken, this.timeMs);
+    this.speech.draw(ctx);
   }
 
-  private puncherRenderInput() {
+  private puncherRender() {
     return {
       x: this.puncher.x, y: this.puncher.y, facing: 1 as const,
       armAngleL: this.puncher.leftArmAngle(),
@@ -67,12 +137,17 @@ export class GameScene {
       name: this.data.puncher.name, nameColor: '#ffd700',
     };
   }
-  private victimRenderInput() {
+  private victimRender() {
     return {
       x: this.victim.x, y: this.victim.y, facing: -1 as const,
       armAngleL: 2.5, armAngleR: 2.5,
       avatar: this.data.victim.avatar, jersey: this.data.victim.jersey,
       name: this.data.victim.name, nameColor: '#ff6b6b',
     };
+  }
+
+  private shake(_combo: number): void {
+    this.container.classList.add('shake');
+    setTimeout(() => this.container.classList.remove('shake'), 300);
   }
 }
