@@ -7,7 +7,12 @@
   <link rel="stylesheet" href="/src/styles.css" />
 </head>
 <body>
-  <div id="app"></div>
+  <div id="compat-banner" hidden></div>
+  <div id="app">
+    <div id="screen-setup"  class="screen"></div>
+    <div id="screen-game"   class="screen" hidden></div>
+    <div id="screen-replay" class="screen" hidden></div>
+  </div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
