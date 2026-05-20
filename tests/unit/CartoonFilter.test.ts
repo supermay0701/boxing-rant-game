@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { posterize } from '../../src/shared/CartoonFilter';
+import { posterize, sobelEdges } from '../../src/shared/CartoonFilter';
 
 describe('CartoonFilter.posterize', () => {
   it('quantizes channel values to 6 buckets', () => {
@@ -17,5 +17,22 @@ describe('CartoonFilter.posterize', () => {
     const arr = new Uint8ClampedArray(40);
     posterize(arr, 6);
     expect(arr.length).toBe(40);
+  });
+});
+
+describe('CartoonFilter.sobelEdges', () => {
+  it('detects edges on a high-contrast 4x4 image', () => {
+    // 4x4 image, left half black, right half white
+    const data = new Uint8ClampedArray(4 * 4 * 4);
+    for (let y = 0; y < 4; y++) {
+      for (let x = 0; x < 4; x++) {
+        const i = (y * 4 + x) * 4;
+        const v = x < 2 ? 0 : 255;
+        data[i] = v; data[i + 1] = v; data[i + 2] = v; data[i + 3] = 255;
+      }
+    }
+    const edges = sobelEdges(data, 4, 4);
+    // Column 1-2 boundary should have high edge magnitude
+    expect(edges[1 * 4 + 1]).toBeGreaterThan(100);
   });
 });
