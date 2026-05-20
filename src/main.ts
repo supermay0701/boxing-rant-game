@@ -1,6 +1,7 @@
 import { GameStore } from './shared/GameStore';
 import { SetupPanel } from './setup/SetupPanel';
 import { GameScene, type GameStats as RawStats } from './game/GameScene';
+import { ReplayScreen } from './replay/ReplayScreen';
 import type { SetupData } from './setup/types';
 
 export type Screen = 'setup' | 'game' | 'replay';
@@ -8,31 +9,13 @@ export const store = new GameStore();
 
 let currentGame: GameScene | null = null;
 let lastSetupData: SetupData | null = null;
+let replayScreen: ReplayScreen | null = null;
 
 function showScreen(name: Screen) {
   for (const s of ['setup', 'game', 'replay'] as Screen[]) {
     const el = document.getElementById(`screen-${s}`);
     if (el) el.hidden = s !== name;
   }
-}
-(window as any).showScreen = showScreen;
-
-function startGame(data: SetupData) {
-  lastSetupData = data;
-  const gameRoot = document.getElementById('screen-game')!;
-  if (currentGame) currentGame.stop();
-  currentGame = new GameScene(gameRoot, data, (stats: RawStats, blob) => {
-    store.set('stats', {
-      totalHits: stats.totalHits,
-      maxCombo: stats.maxCombo,
-      hotZoneStart: computeHotZone(stats.hitTimestamps),
-      damageLevel: stats.damageLevel,
-    });
-    store.set('recording', blob);
-    showScreen('replay');
-  });
-  showScreen('game');
-  currentGame.start();
 }
 
 function computeHotZone(hits: number[]): number {
@@ -46,10 +29,42 @@ function computeHotZone(hits: number[]): number {
   return bestStart;
 }
 
+function showReplay() {
+  const replayRoot = document.getElementById('screen-replay')!;
+  if (!replayScreen) replayScreen = new ReplayScreen(replayRoot);
+  replayScreen.render(store.get('stats'), store.get('recording'), {
+    onNew: () => {
+      store.set('puncher', null);
+      store.set('victim', null);
+      store.set('recording', null);
+      lastSetupData = null;
+      location.reload();   // simplest reset
+    },
+    onRematch: () => { if (lastSetupData) startGame(lastSetupData); },
+  });
+  showScreen('replay');
+}
+
+function startGame(data: SetupData) {
+  lastSetupData = data;
+  const gameRoot = document.getElementById('screen-game')!;
+  if (currentGame) currentGame.stop();
+  currentGame = new GameScene(gameRoot, data, (stats: RawStats, blob) => {
+    store.set('stats', {
+      totalHits: stats.totalHits,
+      maxCombo: stats.maxCombo,
+      hotZoneStart: computeHotZone(stats.hitTimestamps),
+      damageLevel: stats.damageLevel,
+    });
+    store.set('recording', blob);
+    showReplay();
+  });
+  showScreen('game');
+  currentGame.start();
+}
+
 const setupRoot = document.getElementById('screen-setup')!;
 const setup = new SetupPanel(setupRoot);
 setup.onStart(startGame);
-
-(window as any).restartLast = () => { if (lastSetupData) startGame(lastSetupData); };
 
 showScreen('setup');
