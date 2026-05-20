@@ -66,5 +66,6 @@ function startGame(data: SetupData) {
 const setupRoot = document.getElementById('screen-setup')!;
 const setup = new SetupPanel(setupRoot);
 setup.onStart(startGame);
+setup.hydrateFromLocalStorage();
 
 showScreen('setup');

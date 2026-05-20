@@ -3,6 +3,7 @@ import { AvatarUploader } from './AvatarUploader';
 import { JerseyPicker } from './JerseyPicker';
 import { TrashTalkEditor } from './TrashTalkEditor';
 import type { SetupData, JerseyConfig } from './types';
+import { saveSetup, loadSetup, type PersistedSetup, type PersistedJersey } from '../shared/Persistence';
 
 export interface RawSetupState {
   puncherName: string;
@@ -39,6 +40,37 @@ export class SetupPanel {
   constructor(root: HTMLElement) {
     this.root = root;
     this.render();
+  }
+
+  async hydrateFromLocalStorage(): Promise<void> {
+    const saved = loadSetup();
+    if (!saved) return;
+    this.state.puncherName = saved.puncher.name;
+    this.state.victimName  = saved.victim.name;
+    this.state.puncherTalks = saved.puncher.talks ?? [];
+    if (saved.puncher.avatarDataUrl) this.state.puncherAvatar = await dataUrlToBitmap(saved.puncher.avatarDataUrl);
+    if (saved.victim.avatarDataUrl)  this.state.victimAvatar  = await dataUrlToBitmap(saved.victim.avatarDataUrl);
+    this.state.puncherJersey = await rehydrateJersey(saved.puncher.jersey);
+    this.state.victimJersey  = await rehydrateJersey(saved.victim.jersey);
+    this.render();
+  }
+
+  persistCurrentState(): void {
+    if (!this.state.puncherAvatar || !this.state.victimAvatar) return;
+    const persisted: PersistedSetup = {
+      puncher: {
+        name: this.state.puncherName,
+        avatarDataUrl: bitmapToDataUrl(this.state.puncherAvatar),
+        jersey: jerseyToPersisted(this.state.puncherJersey!),
+        talks: this.state.puncherTalks,
+      },
+      victim: {
+        name: this.state.victimName,
+        avatarDataUrl: bitmapToDataUrl(this.state.victimAvatar),
+        jersey: jerseyToPersisted(this.state.victimJersey!),
+      },
+    };
+    saveSetup(persisted);
   }
 
   private render(): void {
@@ -115,6 +147,7 @@ export class SetupPanel {
     const hint = this.root.querySelector('.start-hint') as HTMLElement;
     btn.disabled = !v.ok;
     hint.textContent = v.ok ? '' : `請先完成：${v.missing}`;
+    if (v.ok) this.persistCurrentState();
   }
 
   private tryStart(): void {
@@ -129,4 +162,24 @@ export class SetupPanel {
   }
 
   onStart(h: StartHandler): void { this.handler = h; }
+}
+
+function bitmapToDataUrl(b: ImageBitmap): string {
+  const c = document.createElement('canvas');
+  c.width = b.width; c.height = b.height;
+  c.getContext('2d')!.drawImage(b, 0, 0);
+  return c.toDataURL('image/png');
+}
+async function dataUrlToBitmap(url: string): Promise<ImageBitmap> {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return createImageBitmap(blob);
+}
+function jerseyToPersisted(j: JerseyConfig): PersistedJersey {
+  if (j.type === 'preset') return { type: 'preset', primary: j.primary, secondary: j.secondary };
+  return { type: 'custom', primary: '#000', secondary: '#fff', bitmapDataUrl: bitmapToDataUrl(j.bitmap) };
+}
+async function rehydrateJersey(p: PersistedJersey): Promise<JerseyConfig> {
+  if (p.type === 'preset') return { type: 'preset', primary: p.primary, secondary: p.secondary };
+  return { type: 'custom', bitmap: await dataUrlToBitmap(p.bitmapDataUrl!) };
 }
