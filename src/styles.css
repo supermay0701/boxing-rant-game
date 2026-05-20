@@ -28,3 +28,11 @@ html, body { margin: 0; padding: 0; font-family: -apple-system, "Segoe UI", "Mic
 .talk-line .count { color: #666; font-size: 9px; }
 .add-talk-btn { background: transparent; border: 1px dashed #4a7cff; color: #4a7cff; padding: 5px 8px; border-radius: 4px; font-size: 11px; width: 100%; cursor: pointer; margin-top: 4px; }
 .add-talk-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.setup-container { max-width: 480px; margin: 0 auto; padding: 20px; }
+.demo-frame { background: #1f2230; border: 2px solid #3a3f55; border-radius: 10px; padding: 14px; }
+.tabs { display: flex; border-bottom: 2px solid #3a3f55; margin-bottom: 12px; }
+.tab { flex: 1; padding: 10px; text-align: center; font-weight: 700; color: #888; border-bottom: 3px solid transparent; margin-bottom: -2px; cursor: pointer; }
+.tab.active { color: #fff; border-bottom-color: #4a7cff; }
+.start-btn { background: linear-gradient(180deg, #e74c3c, #c0392b); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 700; width: 100%; margin-top: 8px; cursor: pointer; }
+.start-btn:disabled { opacity: 0.5; cursor: not-allowed; }

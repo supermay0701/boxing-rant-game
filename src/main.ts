@@ -1,4 +1,6 @@
 import { GameStore } from './shared/GameStore';
+import { SetupPanel } from './setup/SetupPanel';
+import type { SetupData } from './setup/types';
 
 export type Screen = 'setup' | 'game' | 'replay';
 
@@ -10,9 +12,15 @@ function showScreen(name: Screen) {
     if (el) el.hidden = s !== name;
   }
 }
+(window as any).showScreen = showScreen;
 
-(window as any).showScreen = showScreen; // dev convenience
+const setupRoot = document.getElementById('screen-setup')!;
+const setup = new SetupPanel(setupRoot);
+setup.onStart((data: SetupData) => {
+  store.set('puncher', { ...data.puncher });
+  store.set('victim', data.victim);
+  showScreen('game');
+  console.log('[main] start game with', data);
+});
+
 showScreen('setup');
-
-const setupEl = document.getElementById('screen-setup');
-if (setupEl) setupEl.textContent = '(Setup 畫面)';
