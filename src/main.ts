@@ -3,9 +3,25 @@ import { SetupPanel } from './setup/SetupPanel';
 import { GameScene, type GameStats as RawStats } from './game/GameScene';
 import { ReplayScreen } from './replay/ReplayScreen';
 import type { SetupData } from './setup/types';
+import { TTS } from './shared/TTS';
+import { Recorder } from './game/Recorder';
 
 export type Screen = 'setup' | 'game' | 'replay';
 export const store = new GameStore();
+
+function showCompatBannerIfNeeded() {
+  const banner = document.getElementById('compat-banner');
+  if (!banner) return;
+  const recOK = Recorder.isSupported();
+  const ttsOK = TTS.isAvailable();
+  if (recOK && ttsOK) return;
+  const missing: string[] = [];
+  if (!recOK) missing.push('錄影');
+  if (!ttsOK) missing.push('語音');
+  banner.textContent = `⚠ 部分功能（${missing.join('、')}）在你的瀏覽器可能失效，建議用桌機 Chrome/Edge 體驗完整版。`;
+  banner.hidden = false;
+}
+showCompatBannerIfNeeded();
 
 let currentGame: GameScene | null = null;
 let lastSetupData: SetupData | null = null;
