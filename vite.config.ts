@@ -1,0 +1,11 @@
+/// <reference types="vitest" />
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  base: './',
+  build: { outDir: 'dist' },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+  },
+});

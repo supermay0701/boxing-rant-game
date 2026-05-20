@@ -1,0 +1,29 @@
+{
+  "name": "boxing-rant-game",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:e2e": "playwright test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/howler": "^2.2.13",
+    "@types/node": "^25.9.1",
+    "@vitest/ui": "^4.1.7",
+    "jsdom": "^29.1.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.13",
+    "vitest": "^4.1.7"
+  },
+  "dependencies": {
+    "howler": "^2.2.4"
+  }
+}
