@@ -5,8 +5,10 @@ describe('Victim', () => {
   it('drifts toward puncher over time (net attraction)', () => {
     const v = new Victim(400, 350);
     const startX = v.x;
-    for (let t = 0; t < 100; t++) v.update(16, { x: 150, y: 350 });
-    expect(v.x).toBeLessThan(startX);  // moved leftward toward puncher
+    // Run 1000 frames: attraction (0.25 px/frame * 1000 = 250 px drift)
+    // dominates noise (max ±60 px), so result is deterministic
+    for (let t = 0; t < 1000; t++) v.update(16, { x: 150, y: 350 });
+    expect(v.x).toBeLessThan(startX - 100);  // moved well leftward toward puncher
   });
 
   it('stays within bounds rectangle', () => {
