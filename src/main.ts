@@ -65,7 +65,12 @@ function startGame(data: SetupData) {
   lastSetupData = data;
   const gameRoot = document.getElementById('screen-game')!;
   if (currentGame) currentGame.stop();
-  currentGame = new GameScene(gameRoot, data, (stats: RawStats, blob) => {
+  const params = new URLSearchParams(location.search);
+  const durationOverride = params.get('duration');
+  const effectiveData = durationOverride
+    ? { ...data, duration: parseInt(durationOverride, 10) }
+    : data;
+  currentGame = new GameScene(gameRoot, effectiveData, (stats: RawStats, blob) => {
     store.set('stats', {
       totalHits: stats.totalHits,
       maxCombo: stats.maxCombo,

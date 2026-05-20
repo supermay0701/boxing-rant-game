@@ -20,7 +20,11 @@ export class Recorder {
   async stop(): Promise<Blob | null> {
     if (!this.mediaRecorder) return null;
     return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        resolve(this.chunks.length > 0 ? new Blob(this.chunks, { type: 'video/webm' }) : null);
+      }, 3000);
       this.mediaRecorder!.onstop = () => {
+        clearTimeout(timeout);
         resolve(new Blob(this.chunks, { type: 'video/webm' }));
       };
       this.mediaRecorder!.stop();
