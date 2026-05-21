@@ -14,6 +14,7 @@ export class Puncher {
   private elapsed = 0;
   private cooldown = 0;
   private strikeId = 0;
+  activeArm: 'L' | 'R' = 'R';
   currentStrikeId(): number { return this.strikeId; }
 
   constructor(public x: number, public y: number) {}
@@ -30,6 +31,7 @@ export class Puncher {
         remaining -= cdUsed;
         const distToVictim = distance(this, victim);
         if (this.cooldown === 0 && distToVictim <= PUNCH_RANGE) {
+          this.activeArm = this.activeArm === 'R' ? 'L' : 'R';
           this.state = 'wind_up';
           this.elapsed = 0;
           // remaining continues into wind_up this tick
@@ -77,12 +79,19 @@ export class Puncher {
 
   /** Returns right-arm angle for renderer (0 = down, π/2 = right). */
   rightArmAngle(): number {
-    if (this.state === 'wind_up') return 1.0;        // pulled back
-    if (this.state === 'strike')  return -1.6;       // forward (rightward)
-    if (this.state === 'recover') return 0.5;        // returning
-    return 2.5;                                       // resting (down-right)
+    if (this.activeArm !== 'R') return 2.5;  // resting
+    if (this.state === 'wind_up') return 1.0;
+    if (this.state === 'strike')  return -1.6;
+    if (this.state === 'recover') return 0.5;
+    return 2.5;
   }
-  leftArmAngle(): number { return 2.5; }
+  leftArmAngle(): number {
+    if (this.activeArm !== 'L') return 2.5;  // resting
+    if (this.state === 'wind_up') return -1.0;  // mirror of right
+    if (this.state === 'strike')  return 1.6;   // mirror
+    if (this.state === 'recover') return -0.5;
+    return 2.5;
+  }
 }
 
 function distance(a: Point, b: Point): number {

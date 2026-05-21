@@ -120,7 +120,7 @@ export class GameScene {
     this.speech.tick(deltaMs);
 
     if (this.puncher.state === 'strike' && this.puncher.currentStrikeId() > this.lastResolvedStrikeId) {
-      const glove = gloveTipPosition(this.puncherRender(), 'R');
+      const glove = gloveTipPosition(this.puncherRender(), this.puncher.activeArm);
       const victimCircle = { x: this.victim.x, y: this.victim.y, r: CHARACTER_BODY_R };
       if (circlesIntersect(glove, victimCircle)) {
         this.victim.takeHit({ x: this.puncher.x, y: this.puncher.y });
