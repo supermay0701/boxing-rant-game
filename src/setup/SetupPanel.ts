@@ -82,7 +82,7 @@ export class SetupPanel {
             <div class="tab${this.activeTab === 'victim'  ? ' active' : ''}" data-tab="victim">😵 被扁</div>
           </div>
           <div class="tab-content"></div>
-          <button class="start-btn" disabled>🥊 開打！</button>
+          <button class="start-btn" disabled>🥊 開扁！</button>
           <div class="start-hint" style="font-size:11px;color:#ff6b6b;text-align:center;margin-top:6px"></div>
         </div>
       </div>
