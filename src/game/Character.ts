@@ -12,11 +12,11 @@ export interface CharacterRenderInput {
   nameColor: string;
 }
 
-const HEAD_R = 22;
-const BODY_R = 25;
-const ARM_LEN = 38;
-const GLOVE_R = 11;
-const LEG_R = 9;
+const HEAD_R = 28;
+const BODY_R = 32;
+const ARM_LEN = 50;
+const GLOVE_R = 14;
+const LEG_R = 11;
 
 export function drawCharacter(ctx: CanvasRenderingContext2D, c: CharacterRenderInput): void {
   const { x, y } = c;
@@ -30,10 +30,6 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, c: CharacterRenderI
   // Body (jersey)
   drawBody(ctx, x, y, BODY_R, c.jersey);
 
-  // Arms with gloves
-  drawArm(ctx, x - 12, y - 6, c.armAngleL, '#c0392b');
-  drawArm(ctx, x + 12, y - 6, c.armAngleR, '#c0392b');
-
   // Head with avatar
   ctx.save();
   ctx.beginPath();
@@ -44,6 +40,10 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, c: CharacterRenderI
   ctx.restore();
   ctx.strokeStyle = '#222'; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.arc(x, y - BODY_R - 4, HEAD_R, 0, Math.PI * 2); ctx.stroke();
+
+  // Arms with gloves (drawn after head so they appear in front of face)
+  drawArm(ctx, x - 15, y - 8, c.armAngleL, '#c0392b');
+  drawArm(ctx, x + 15, y - 8, c.armAngleR, '#c0392b');
 
   // Name label
   ctx.font = 'bold 12px sans-serif';
@@ -99,8 +99,8 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 }
 
 export function gloveTipPosition(c: CharacterRenderInput, side: 'L' | 'R'): { x: number; y: number; r: number } {
-  const shoulderX = c.x + (side === 'L' ? -12 : 12);
-  const shoulderY = c.y - 6;
+  const shoulderX = c.x + (side === 'L' ? -15 : 15);
+  const shoulderY = c.y - 8;
   const angle = side === 'L' ? c.armAngleL : c.armAngleR;
   return {
     x: shoulderX + Math.sin(angle) * ARM_LEN,
