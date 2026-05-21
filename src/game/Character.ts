@@ -10,6 +10,7 @@ export interface CharacterRenderInput {
   jersey: JerseyConfig;
   name: string;
   nameColor: string;
+  rotation?: number;    // radians, optional
 }
 
 const HEAD_R = 28;
@@ -20,6 +21,14 @@ const LEG_R = 11;
 
 export function drawCharacter(ctx: CanvasRenderingContext2D, c: CharacterRenderInput): void {
   const { x, y } = c;
+
+  const hasRotation = c.rotation !== undefined && c.rotation !== 0;
+  if (hasRotation) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(c.rotation!);
+    ctx.translate(-x, -y);
+  }
 
   // Legs
   ctx.fillStyle = '#6a5239'; ctx.strokeStyle = '#222'; ctx.lineWidth = 2;
@@ -45,16 +54,20 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, c: CharacterRenderI
   drawArm(ctx, x - 15, y - 8, c.armAngleL, '#c0392b');
   drawArm(ctx, x + 15, y - 8, c.armAngleR, '#c0392b');
 
-  // Name label
-  ctx.font = 'bold 12px sans-serif';
-  ctx.textAlign = 'center';
-  const text = c.name;
-  const w = ctx.measureText(text).width + 12;
-  const labelY = y - BODY_R - HEAD_R * 2 - 14;
-  ctx.fillStyle = 'rgba(0,0,0,0.75)';
-  roundRect(ctx, x - w / 2, labelY - 12, w, 16, 8); ctx.fill();
-  ctx.fillStyle = c.nameColor;
-  ctx.fillText(text, x, labelY);
+  // Name label (skip if rotated, to avoid weird upside-down text)
+  if (!hasRotation) {
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    const text = c.name;
+    const w = ctx.measureText(text).width + 12;
+    const labelY = y - BODY_R - HEAD_R * 2 - 14;
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    roundRect(ctx, x - w / 2, labelY - 12, w, 16, 8); ctx.fill();
+    ctx.fillStyle = c.nameColor;
+    ctx.fillText(text, x, labelY);
+  }
+
+  if (hasRotation) ctx.restore();
 }
 
 function drawBody(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, jersey: JerseyConfig): void {

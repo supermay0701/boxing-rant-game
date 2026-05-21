@@ -179,6 +179,7 @@ export class GameScene {
       armAngleR: isKO ?  2.7 :  1.4,   // KO: hands up; normal: out to right
       avatar: this.data.victim.avatar, jersey: this.data.victim.jersey,
       name: this.data.victim.name, nameColor: '#ff6b6b',
+      rotation: isKO ? Math.PI / 2 : 0,  // 90° clockwise when KO'd
     };
   }
 
