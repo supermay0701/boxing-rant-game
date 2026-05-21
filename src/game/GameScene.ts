@@ -129,8 +129,9 @@ export class GameScene {
 
     if (this.puncher.state === 'strike' && this.puncher.currentStrikeId() > this.lastResolvedStrikeId) {
       const glove = gloveTipPosition(this.puncherRender(), this.puncher.activeArm);
+      const hitZone = { x: glove.x, y: glove.y, r: glove.r + 10 };  // +10px collision generosity
       const victimCircle = { x: this.victim.x, y: this.victim.y, r: CHARACTER_BODY_R };
-      if (circlesIntersect(glove, victimCircle)) {
+      if (circlesIntersect(hitZone, victimCircle)) {
         this.victim.takeHit({ x: this.puncher.x, y: this.puncher.y });
         this.combo.hit();
         this.hitTimestamps.push(this.timeMs);
