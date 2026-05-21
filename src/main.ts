@@ -89,7 +89,7 @@ function startGame(data: SetupData) {
   const effectiveData = durationOverride
     ? { ...data, duration: parseInt(durationOverride, 10) }
     : data;
-  currentGame = new GameScene(gameRoot, effectiveData, (stats: RawStats, blob) => {
+  currentGame = new GameScene(gameRoot, effectiveData, (stats: RawStats, blob, mimeType) => {
     store.set('stats', {
       totalHits: stats.totalHits,
       maxCombo: stats.maxCombo,
@@ -97,6 +97,7 @@ function startGame(data: SetupData) {
       damageLevel: stats.damageLevel,
     });
     store.set('recording', blob);
+    (window as any).__lastMimeType = mimeType;  // simple way to pass through to ReplayPlayer
     showReplay();
   });
   showScreen('game');

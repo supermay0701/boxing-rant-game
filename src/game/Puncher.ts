@@ -51,19 +51,30 @@ export class Puncher {
           break; // nothing more to do while idle and out of range / on cooldown
         }
       } else {
-        this.elapsed += remaining;
         const mult = this.rageMode ? RAGE_SPEED_MULTIPLIER : 1;
-        if (this.state === 'wind_up' && this.elapsed >= WIND_UP_MS / mult) {
-          this.state = 'strike'; this.elapsed = 0;
-          this.strikeId++;
-          enteredStrike = true;
-        } else if (this.state === 'strike' && this.elapsed >= STRIKE_MS / mult) {
-          this.state = 'recover'; this.elapsed = 0;
-        } else if (this.state === 'recover' && this.elapsed >= RECOVER_MS / mult) {
-          this.state = 'idle'; this.elapsed = 0;
-          this.cooldown = COOLDOWN_MS / mult;
+        const phaseDuration =
+          this.state === 'wind_up' ? WIND_UP_MS / mult :
+          this.state === 'strike'  ? STRIKE_MS  / mult :
+          RECOVER_MS / mult;
+        const needed = phaseDuration - this.elapsed;
+        if (remaining < needed) {
+          this.elapsed += remaining;
+          remaining = 0;
+        } else {
+          remaining -= needed;
+          this.elapsed = 0;
+          if (this.state === 'wind_up') {
+            this.state = 'strike';
+            this.strikeId++;
+            enteredStrike = true;
+          } else if (this.state === 'strike') {
+            this.state = 'recover';
+          } else if (this.state === 'recover') {
+            this.state = 'idle';
+            this.cooldown = COOLDOWN_MS / mult;
+            // remaining delta now counts against cooldown — loop continues
+          }
         }
-        remaining = 0;
       }
     }
 

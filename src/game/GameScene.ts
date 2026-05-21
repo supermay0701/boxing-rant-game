@@ -39,9 +39,9 @@ export class GameScene {
   private floatingTexts: { text: string; x: number; y: number; remainingMs: number; color: string; size: number }[] = [];
   private wasVictimKO = false;
   private rageTriggered = false;
-  private onFinish: (stats: GameStats, blob: Blob | null) => void;
+  private onFinish: (stats: GameStats, blob: Blob | null, mimeType: string | null) => void;
 
-  constructor(root: HTMLElement, data: SetupData, onFinish: (stats: GameStats, blob: Blob | null) => void) {
+  constructor(root: HTMLElement, data: SetupData, onFinish: (stats: GameStats, blob: Blob | null, mimeType: string | null) => void) {
     this.data = data;
     this.onFinish = onFinish;
     root.innerHTML = `<div class="game-container"><canvas id="game-canvas" width="${RING_SIZE}" height="${RING_SIZE}"></canvas></div>`;
@@ -57,7 +57,7 @@ export class GameScene {
     this.timer = new Timer(data.duration, () => this.finish());
     this.speech = new SpeechBubbleSystem(data.puncher.talks);
     this.hud = new HUD(this.container);
-    this.recorder = new Recorder(this.canvas);
+    this.recorder = new Recorder(this.canvas, audio.getRecordingStream() ?? undefined);
 
     this.loop = new GameLoop(this.ctx, (d) => this.update(d), (ctx) => this.render(ctx));
 
@@ -79,7 +79,7 @@ export class GameScene {
   private async finish(): Promise<void> {
     this.loop.stop();
     audio.stop('bgm');
-    const blob = await this.recorder.stop();
+    const result = await this.recorder.stop();
     const stats: GameStats = {
       totalHits: this.victim.hitsTaken,
       maxCombo: this.combo.maxCombo,
@@ -87,7 +87,7 @@ export class GameScene {
       hitTimestamps: [...this.hitTimestamps],
     };
     this.hud.destroy();
-    this.onFinish(stats, blob);
+    this.onFinish(stats, result?.blob ?? null, result?.mimeType ?? null);
   }
 
   private computeDamageLevel(): number {

@@ -13,6 +13,7 @@ export class AudioPlayer {
   private sounds: Map<SoundId, Howl> = new Map();
   private failed: Set<SoundId> = new Set();
   private synthCtx?: AudioContext;
+  private synthDest?: MediaStreamAudioDestinationNode;
 
   preload(): void {
     for (const id of Object.keys(SOURCES) as SoundId[]) {
@@ -45,12 +46,50 @@ export class AudioPlayer {
     if (s) s.stop();
   }
 
+  getRecordingStream(): MediaStream | null {
+    // Synth ctx (created on first play)
+    if (!this.synthCtx) {
+      // Force-create the synth ctx now
+      this.getSynthCtx();
+    }
+    if (!this.synthDest) {
+      this.synthDest = this.synthCtx!.createMediaStreamDestination();
+    }
+
+    // Howler's master gain (if Howler is loaded and has played)
+    const Howler = (window as any).Howler;
+    if (Howler?.masterGain && Howler?.ctx) {
+      try {
+        // Tee Howler's master into both the original destination AND our recording destination
+        // Howler.ctx might be different from our synthCtx — handle separately
+        const howlDest = Howler.ctx.createMediaStreamDestination();
+        Howler.masterGain.connect(howlDest);
+        // Combine tracks from both contexts
+        const tracks = [
+          ...this.synthDest.stream.getAudioTracks(),
+          ...howlDest.stream.getAudioTracks(),
+        ];
+        return new MediaStream(tracks);
+      } catch (e) {
+        console.warn('[Audio] failed to combine Howler stream:', e);
+      }
+    }
+
+    return this.synthDest.stream;
+  }
+
   private getSynthCtx(): AudioContext {
     if (!this.synthCtx) {
       const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
       this.synthCtx = new AC() as AudioContext;
     }
     return this.synthCtx as AudioContext;
+  }
+
+  private connectToOutput(node: AudioNode): void {
+    const ctx = this.getSynthCtx();
+    node.connect(ctx.destination);
+    if (this.synthDest) node.connect(this.synthDest);
   }
 
   private playSynth(id: SoundId): void {
@@ -70,7 +109,8 @@ export class AudioPlayer {
       noiseFilter.frequency.value = 800;
       const noiseGain = ctx.createGain();
       noiseGain.gain.value = 0.6;
-      noise.connect(noiseFilter).connect(noiseGain).connect(ctx.destination);
+      noise.connect(noiseFilter).connect(noiseGain);
+      this.connectToOutput(noiseGain);
       noise.start(now);
 
       // Sub-bass thump: 150ms sine 90→35Hz
@@ -80,7 +120,8 @@ export class AudioPlayer {
       sub.frequency.exponentialRampToValueAtTime(35, now + 0.15);
       subGain.gain.setValueAtTime(0.7, now);
       subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-      sub.connect(subGain).connect(ctx.destination);
+      sub.connect(subGain);
+      this.connectToOutput(subGain);
       sub.start(now);
       sub.stop(now + 0.2);
     } else if (id === 'hit') {
@@ -92,7 +133,8 @@ export class AudioPlayer {
       osc.frequency.exponentialRampToValueAtTime(60, now + 0.08);
       oscGain.gain.setValueAtTime(0.35, now);
       oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-      osc.connect(oscGain).connect(ctx.destination);
+      osc.connect(oscGain);
+      this.connectToOutput(oscGain);
       osc.start(now);
       osc.stop(now + 0.12);
 
@@ -104,7 +146,8 @@ export class AudioPlayer {
       click.buffer = clickBuf;
       const clickGain = ctx.createGain();
       clickGain.gain.value = 0.5;
-      click.connect(clickGain).connect(ctx.destination);
+      click.connect(clickGain);
+      this.connectToOutput(clickGain);
       click.start(now);
     } else if (id === 'whoosh') {
       // White noise burst with band-pass sweep
@@ -121,7 +164,8 @@ export class AudioPlayer {
       const gain = ctx.createGain();
       gain.gain.setValueAtTime(0.15, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-      noise.connect(filter).connect(gain).connect(ctx.destination);
+      noise.connect(filter).connect(gain);
+      this.connectToOutput(gain);
       noise.start(now);
     }
   }

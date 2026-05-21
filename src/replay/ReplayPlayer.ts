@@ -9,10 +9,15 @@ export class ReplayPlayer {
     }
     if (this.url) URL.revokeObjectURL(this.url);
     this.url = URL.createObjectURL(blob);
+
+    // Determine extension from blob.type or fallback
+    const mimeType = blob.type || (window as any).__lastMimeType || 'video/webm';
+    const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+
     this.root.innerHTML = `
       <video src="${this.url}" controls autoplay class="replay-video"></video>
       <div class="replay-actions">
-        <a class="replay-download" href="${this.url}" download="fight.webm">⬇ 下載 .webm</a>
+        <a class="replay-download" href="${this.url}" download="fight.${ext}">⬇ 下載 .${ext}</a>
       </div>
     `;
   }
