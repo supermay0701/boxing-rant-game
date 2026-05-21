@@ -80,7 +80,10 @@ export class AvatarUploader {
   private renderRecents(): void {
     const container = this.root.querySelector('.recent-avatars') as HTMLElement;
     const recents = loadRecentAvatars();
-    if (recents.length === 0) { container.innerHTML = ''; return; }
+    if (recents.length === 0) {
+      container.innerHTML = `<div style="font-size:10px;color:rgba(156,163,175,0.45);margin-bottom:6px;font-style:italic;">上傳後可在此快速重複選取</div>`;
+      return;
+    }
 
     container.innerHTML = `
       <div style="margin-bottom:8px">
