@@ -11,6 +11,7 @@ export interface CharacterRenderInput {
   name: string;
   nameColor: string;
   rotation?: number;    // radians, optional
+  brokenArms?: boolean; // if true, draws arms with mid-elbow break + fracture indicator
 }
 
 const HEAD_R = 28;
@@ -50,9 +51,14 @@ export function drawCharacter(ctx: CanvasRenderingContext2D, c: CharacterRenderI
   ctx.strokeStyle = '#222'; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.arc(x, y - BODY_R - 4, HEAD_R, 0, Math.PI * 2); ctx.stroke();
 
-  // Arms with gloves (drawn after head so they appear in front of face)
-  drawArm(ctx, x - 15, y - 8, c.armAngleL, '#c0392b');
-  drawArm(ctx, x + 15, y - 8, c.armAngleR, '#c0392b');
+  // Arms with gloves (broken if KO)
+  if (c.brokenArms) {
+    drawBrokenArm(ctx, x - 15, y - 8, c.armAngleL, c.armAngleL + 1.2, '#c0392b');
+    drawBrokenArm(ctx, x + 15, y - 8, c.armAngleR, c.armAngleR - 1.2, '#c0392b');
+  } else {
+    drawArm(ctx, x - 15, y - 8, c.armAngleL, '#c0392b');
+    drawArm(ctx, x + 15, y - 8, c.armAngleR, '#c0392b');
+  }
 
   // Name label (skip if rotated, to avoid weird upside-down text)
   if (!hasRotation) {
@@ -99,6 +105,59 @@ function drawArm(ctx: CanvasRenderingContext2D, shoulderX: number, shoulderY: nu
   ctx.beginPath(); ctx.moveTo(shoulderX, shoulderY); ctx.lineTo(endX, endY); ctx.stroke();
   ctx.fillStyle = gloveColor; ctx.strokeStyle = '#222'; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.arc(endX, endY, GLOVE_R, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+}
+
+function drawBrokenArm(ctx: CanvasRenderingContext2D, shoulderX: number, shoulderY: number, upperAngle: number, lowerAngle: number, gloveColor: string): void {
+  // Upper arm = half length, ends at elbow
+  const halfLen = ARM_LEN * 0.55;
+  const elbowX = shoulderX + Math.sin(upperAngle) * halfLen;
+  const elbowY = shoulderY + Math.cos(upperAngle) * halfLen;
+
+  // Forearm at different angle = bent unnaturally
+  const foreLen = ARM_LEN * 0.5;
+  const endX = elbowX + Math.sin(lowerAngle) * foreLen;
+  const endY = elbowY + Math.cos(lowerAngle) * foreLen;
+
+  // Draw upper arm
+  ctx.strokeStyle = '#f5d4a3';
+  ctx.lineWidth = 6;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(shoulderX, shoulderY);
+  ctx.lineTo(elbowX, elbowY);
+  ctx.stroke();
+
+  // Draw forearm (bent angle)
+  ctx.beginPath();
+  ctx.moveTo(elbowX, elbowY);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+
+  // Fracture marker at elbow — jagged red lines + small splash
+  ctx.save();
+  ctx.strokeStyle = '#c0392b';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(elbowX - 5, elbowY - 3);
+  ctx.lineTo(elbowX + 4, elbowY + 1);
+  ctx.lineTo(elbowX - 2, elbowY + 5);
+  ctx.lineTo(elbowX + 5, elbowY + 4);
+  ctx.stroke();
+  // Red dot at break
+  ctx.fillStyle = '#a01010';
+  ctx.beginPath();
+  ctx.arc(elbowX, elbowY, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Glove at end
+  ctx.fillStyle = gloveColor;
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(endX, endY, GLOVE_R, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
 }
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
