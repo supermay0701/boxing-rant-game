@@ -5,7 +5,7 @@ export class HUD {
   private comboEl: HTMLElement;
 
   constructor(container: HTMLElement) {
-    container.insertAdjacentHTML('beforeend', `
+    container.insertAdjacentHTML('afterbegin', `
       <div class="hud">
         <div class="hud-time"><span class="lbl">TIME</span> <span class="val">60</span></div>
         <div class="hud-stats">
