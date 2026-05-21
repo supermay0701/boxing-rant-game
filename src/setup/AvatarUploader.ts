@@ -159,10 +159,11 @@ export class AvatarUploader {
     const dispW = Math.round(originalBitmap.width * scale);
     const dispH = Math.round(originalBitmap.height * scale);
 
-    // Initial circle: centered, radius = 40% of smaller dimension
-    this.cropR = Math.round(Math.min(dispW, dispH) * 0.4);
+    // Initial circle: for portrait photos put circle at top 25% (face area)
+    const isPortrait = dispH > dispW * 1.1;
+    this.cropR = Math.round(Math.min(dispW, dispH) * 0.32);  // smaller = 32%
     this.cropX = dispW / 2;
-    this.cropY = dispH / 2;
+    this.cropY = isPortrait ? Math.round(dispH * 0.25) : Math.round(dispH / 2);
 
     const cropContainer = this.root.querySelector('.crop-ui') as HTMLElement;
     cropContainer.hidden = false;
@@ -170,12 +171,20 @@ export class AvatarUploader {
     (this.root.querySelector('.recent-avatars') as HTMLElement).style.display = 'none';
 
     cropContainer.innerHTML = `
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:6px;text-align:center;">拖曳圓圈移到臉部，再點確認</div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:6px;text-align:center;">拖曳圓圈到臉部，滑桿調大小</div>
       <div style="position:relative;display:inline-block;line-height:0;margin:0 auto;display:flex;justify-content:center">
         <canvas class="crop-photo" width="${dispW}" height="${dispH}" style="border-radius:4px;max-width:100%;"></canvas>
         <canvas class="crop-overlay" width="${dispW}" height="${dispH}" style="position:absolute;top:0;left:0;cursor:grab;max-width:100%;"></canvas>
       </div>
-      <div style="display:flex;gap:8px;margin-top:8px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+        <span style="font-size:10px;color:#9ca3af;white-space:nowrap;">圓圈大小</span>
+        <input class="crop-size-slider" type="range"
+          min="${Math.round(Math.min(dispW, dispH) * 0.18)}"
+          max="${Math.round(Math.min(dispW, dispH) * 0.52)}"
+          value="${this.cropR}"
+          style="flex:1;accent-color:#f59e0b;cursor:pointer;" />
+      </div>
+      <div style="display:flex;gap:8px;margin-top:6px;">
         <button class="crop-confirm" style="flex:1;padding:8px;background:#f59e0b;color:#111;border:none;border-radius:4px;font-weight:900;font-size:13px;cursor:pointer;">✓ 確認裁切</button>
         <button class="crop-cancel" style="flex:0 0 auto;padding:8px 12px;background:#374151;color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;">取消</button>
       </div>
@@ -247,6 +256,16 @@ export class AvatarUploader {
     overlayCvs.addEventListener('touchmove', (e) => { e.preventDefault(); const p = getPos(e.touches[0], overlayCvs); onMove(p.x, p.y); }, { passive: false });
     overlayCvs.addEventListener('touchend', onEnd);
 
+    // Size slider
+    const slider = cropContainer.querySelector('.crop-size-slider') as HTMLInputElement;
+    slider.addEventListener('input', () => {
+      this.cropR = parseInt(slider.value, 10);
+      // Re-clamp position so circle stays within image
+      this.cropX = clamp(this.cropX, this.cropR, dispW - this.cropR);
+      this.cropY = clamp(this.cropY, this.cropR, dispH - this.cropR);
+      drawOverlay();
+    });
+
     // Confirm: crop from photo canvas, apply cartoon filter
     (cropContainer.querySelector('.crop-confirm') as HTMLButtonElement).addEventListener('click', async () => {
       const cropSize = this.cropR * 2;
@@ -283,6 +302,7 @@ export class AvatarUploader {
   }
 
   private hideCropUI(): void {
+    if (!this.cropActive) return;
     this.cropActive = false;
     const cropContainer = this.root.querySelector('.crop-ui') as HTMLElement;
     cropContainer.hidden = true;
