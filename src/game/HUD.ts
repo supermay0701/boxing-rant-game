@@ -3,6 +3,7 @@ export class HUD {
   private timeEl: HTMLElement;
   private hitsEl: HTMLElement;
   private comboEl: HTMLElement;
+  private rageBtn: HTMLButtonElement;
 
   constructor(container: HTMLElement) {
     container.insertAdjacentHTML('afterbegin', `
@@ -12,12 +13,20 @@ export class HUD {
           <span><span class="lbl">HITS</span> <span class="val hud-hits">0</span></span>
           <span><span class="lbl">COMBO</span> <span class="val hud-combo">x0</span></span>
         </div>
+        <button class="rage-btn" hidden>🔥 暴怒模式</button>
       </div>
     `);
     this.root = container.querySelector('.hud')!;
     this.timeEl  = this.root.querySelector('.hud-time .val')!;
     this.hitsEl  = this.root.querySelector('.hud-hits')!;
     this.comboEl = this.root.querySelector('.hud-combo')!;
+    this.rageBtn = this.root.querySelector('.rage-btn') as HTMLButtonElement;
+  }
+
+  showRageButton(): void { this.rageBtn.hidden = false; }
+  hideRageButton(): void { this.rageBtn.hidden = true; }
+  onRageClick(handler: () => void): void {
+    this.rageBtn.addEventListener('click', handler);
   }
 
   update(remainingMs: number, hits: number, combo: number): void {

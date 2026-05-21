@@ -21,6 +21,8 @@ export interface GameStats {
 }
 
 export class GameScene {
+  private static RAGE_BUTTON_HITS = 15;
+
   private canvas: HTMLCanvasElement;
   private container: HTMLElement;
   private ctx: CanvasRenderingContext2D;
@@ -57,6 +59,7 @@ export class GameScene {
     this.timer = new Timer(data.duration, () => this.finish());
     this.speech = new SpeechBubbleSystem(data.puncher.talks);
     this.hud = new HUD(this.container);
+    this.hud.onRageClick(() => this.activateRage('manual'));
     this.recorder = new Recorder(this.canvas, audio.getRecordingStream() ?? undefined);
 
     this.loop = new GameLoop(this.ctx, (d) => this.update(d), (ctx) => this.render(ctx));
@@ -130,6 +133,9 @@ export class GameScene {
         this.speech.maybeTrigger({ x: this.puncher.x, y: this.puncher.y });
         audio.play('hit');
         this.lastResolvedStrikeId = this.puncher.currentStrikeId();
+        if (!this.rageTriggered && this.victim.hitsTaken >= GameScene.RAGE_BUTTON_HITS) {
+          this.hud.showRageButton();
+        }
         this.floatingTexts.push({
           text: '+1',
           x: this.victim.x,
@@ -184,6 +190,23 @@ export class GameScene {
     };
   }
 
+  private activateRage(reason: 'auto' | 'manual'): void {
+    if (this.rageTriggered) return;
+    this.rageTriggered = true;
+    this.puncher.rageMode = true;
+    this.hud.hideRageButton();
+    const text = reason === 'manual' ? '⚡ 暴怒模式! ⚡' : '⚡ RAGE MODE! ⚡';
+    this.floatingTexts.push({
+      text,
+      x: 256,
+      y: 80,
+      remainingMs: 2500,
+      color: '#ff0000',
+      size: 48,
+    });
+    this.container.classList.add('rage');
+  }
+
   private shake(combo: number): void {
     this.container.classList.add('shake');
     setTimeout(() => this.container.classList.remove('shake'), 300);
@@ -197,19 +220,7 @@ export class GameScene {
       size: 28,
     });
 
-    if (combo >= 10 && !this.rageTriggered) {
-      this.rageTriggered = true;
-      this.puncher.rageMode = true;
-      this.floatingTexts.push({
-        text: '⚡ RAGE MODE! ⚡',
-        x: 256,        // centered on canvas
-        y: 80,
-        remainingMs: 2500,
-        color: '#ff0000',
-        size: 48,
-      });
-      this.container.classList.add('rage');
-    }
+    if (combo >= 10) this.activateRage('auto');
   }
 
   private advanceFloatingTexts(deltaMs: number): void {
