@@ -1,6 +1,6 @@
-const POSTERIZE_LEVELS = 6;
-const SATURATION = 1.6;
-const EDGE_THRESHOLD = 90;
+const POSTERIZE_LEVELS = 10;
+const SATURATION = 1.4;
+const EDGE_THRESHOLD = 130;
 const TARGET_SIZE = 256;
 
 export function posterize(data: Uint8ClampedArray, levels: number): void {
@@ -49,6 +49,11 @@ export async function applyCartoonFilter(file: File): Promise<ImageBitmap> {
   ctx.drawImage(bitmap, 0, 0, TARGET_SIZE, TARGET_SIZE);
   ctx.filter = 'none';
 
+  // Step 1.5: very soft blur to reduce noise before posterize
+  ctx.filter = 'blur(0.8px)';
+  ctx.drawImage(off, 0, 0);
+  ctx.filter = 'none';
+
   // Step 2: posterize on pixel buffer
   const img = ctx.getImageData(0, 0, TARGET_SIZE, TARGET_SIZE);
   posterize(img.data, POSTERIZE_LEVELS);
@@ -57,7 +62,9 @@ export async function applyCartoonFilter(file: File): Promise<ImageBitmap> {
   const edges = sobelEdges(img.data, TARGET_SIZE, TARGET_SIZE);
   for (let i = 0, j = 0; i < img.data.length; i += 4, j++) {
     if (edges[j] > EDGE_THRESHOLD) {
-      img.data[i] = 0; img.data[i + 1] = 0; img.data[i + 2] = 0;
+      img.data[i]     = Math.floor(img.data[i]     * 0.3);
+      img.data[i + 1] = Math.floor(img.data[i + 1] * 0.3);
+      img.data[i + 2] = Math.floor(img.data[i + 2] * 0.3);
     }
   }
   ctx.putImageData(img, 0, 0);
