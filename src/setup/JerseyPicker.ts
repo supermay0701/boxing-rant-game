@@ -8,15 +8,20 @@ export class JerseyPicker {
   private handler: ChangeHandler = () => {};
   private root: HTMLElement;
 
-  constructor(root: HTMLElement) {
+  constructor(root: HTMLElement, initial: JerseyConfig | null = null) {
     this.root = root;
-    this.current = { type: 'preset', primary: JERSEY_PRESETS[0].primary, secondary: JERSEY_PRESETS[0].secondary };
+    if (initial) {
+      this.current = initial;
+    } else {
+      this.current = { type: 'preset', primary: JERSEY_PRESETS[0].primary, secondary: JERSEY_PRESETS[0].secondary };
+    }
     this.render();
   }
 
   private render(): void {
+    const matchIdx = this.findMatchingPresetIdx();
     const swatches = JERSEY_PRESETS.map((p, i) => `
-      <div class="preset-thumb${i === 0 ? ' selected' : ''}" data-idx="${i}"
+      <div class="preset-thumb${i === matchIdx ? ' selected' : ''}" data-idx="${i}"
            style="background:linear-gradient(135deg, ${p.primary} 0 50%, ${p.secondary} 50% 100%)"></div>
     `).join('');
 
@@ -38,6 +43,13 @@ export class JerseyPicker {
 
     const fileInput = this.root.querySelector('input[type=file]') as HTMLInputElement;
     fileInput.addEventListener('change', () => this.handleUpload(fileInput.files?.[0]));
+  }
+
+  private findMatchingPresetIdx(): number {
+    if (this.current.type !== 'preset') return -1;
+    return JERSEY_PRESETS.findIndex(p =>
+      p.primary === (this.current as any).primary && p.secondary === (this.current as any).secondary
+    );
   }
 
   private selectPreset(idx: number): void {

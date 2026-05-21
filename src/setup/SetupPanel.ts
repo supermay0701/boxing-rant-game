@@ -114,7 +114,8 @@ export class SetupPanel {
     const tab = this.activeTab;
     const nameField   = new NameField(nameRoot, tab === 'puncher' ? this.state.puncherName : this.state.victimName);
     const avatarField = new AvatarUploader(avatarRoot);
-    const jerseyField = new JerseyPicker(jerseyRoot);
+    const existingJersey = tab === 'puncher' ? this.state.puncherJersey : this.state.victimJersey;
+    const jerseyField = new JerseyPicker(jerseyRoot, existingJersey);
 
     const existingAvatar = tab === 'puncher' ? this.state.puncherAvatar : this.state.victimAvatar;
     if (existingAvatar) avatarField.setInitialBitmap(existingAvatar);
