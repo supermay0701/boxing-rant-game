@@ -7,10 +7,10 @@ export class HUD {
   constructor(container: HTMLElement) {
     container.insertAdjacentHTML('beforeend', `
       <div class="hud">
-        <div class="hud-time"><span class="lbl">Time</span> <span class="val">60</span></div>
-        <div class="hud-right">
-          <div><span class="lbl">Hits</span> <span class="val hud-hits">0</span></div>
-          <div><span class="lbl">Combo</span> <span class="val hud-combo">x0</span></div>
+        <div class="hud-time"><span class="lbl">TIME</span> <span class="val">60</span></div>
+        <div class="hud-stats">
+          <span><span class="lbl">HITS</span> <span class="val hud-hits">0</span></span>
+          <span><span class="lbl">COMBO</span> <span class="val hud-combo">x0</span></span>
         </div>
       </div>
     `);
