@@ -21,7 +21,7 @@ export class AudioPlayer {
       const howl = new Howl({
         src: SOURCES[id],
         loop: isBgm,
-        volume: isBgm ? 0.3 : 0.8,
+        volume: isBgm ? 0.15 : 0.8,
         onloaderror: () => {
           this.failed.add(id);
           console.warn(`[Audio] ${id} mp3 missing, using synth fallback`);
