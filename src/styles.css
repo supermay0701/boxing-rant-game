@@ -70,3 +70,10 @@ html, body { margin: 0; padding: 0; font-family: -apple-system, "Segoe UI", "Mic
 .action-new, .action-rematch, .action-swap { flex: 1; background: #4a7cff; color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
 .action-rematch { background: #c0392b; }
 .action-swap { background: #9c27b0; }
+
+.rage { filter: hue-rotate(-20deg) brightness(1.05) contrast(1.1); }
+.rage canvas { animation: pulse 0.8s ease-in-out infinite; }
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 30px rgba(255, 0, 0, 0.3); }
+  50% { box-shadow: 0 0 60px rgba(255, 0, 0, 0.7); }
+}

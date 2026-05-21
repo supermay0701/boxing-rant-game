@@ -38,6 +38,7 @@ export class GameScene {
   private hitTimestamps: number[] = [];
   private floatingTexts: { text: string; x: number; y: number; remainingMs: number; color: string; size: number }[] = [];
   private wasVictimKO = false;
+  private rageTriggered = false;
   private onFinish: (stats: GameStats, blob: Blob | null) => void;
 
   constructor(root: HTMLElement, data: SetupData, onFinish: (stats: GameStats, blob: Blob | null) => void) {
@@ -186,6 +187,7 @@ export class GameScene {
   private shake(combo: number): void {
     this.container.classList.add('shake');
     setTimeout(() => this.container.classList.remove('shake'), 300);
+
     this.floatingTexts.push({
       text: `COMBO x${combo}!`,
       x: this.victim.x,
@@ -194,6 +196,20 @@ export class GameScene {
       color: '#ff6b6b',
       size: 28,
     });
+
+    if (combo >= 10 && !this.rageTriggered) {
+      this.rageTriggered = true;
+      this.puncher.rageMode = true;
+      this.floatingTexts.push({
+        text: '⚡ RAGE MODE! ⚡',
+        x: 256,        // centered on canvas
+        y: 80,
+        remainingMs: 2500,
+        color: '#ff0000',
+        size: 48,
+      });
+      this.container.classList.add('rage');
+    }
   }
 
   private advanceFloatingTexts(deltaMs: number): void {
