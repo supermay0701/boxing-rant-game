@@ -175,8 +175,8 @@ export class GameScene {
     const isKO = this.victim.isKnockedDown;
     return {
       x: this.victim.x, y: this.victim.y, facing: -1 as const,
-      armAngleL: isKO ? 1.5 : 2.5,
-      armAngleR: isKO ? -1.5 : 2.5,
+      armAngleL: isKO ? -2.7 : -1.4,   // KO: hands up; normal: out to left
+      armAngleR: isKO ?  2.7 :  1.4,   // KO: hands up; normal: out to right
       avatar: this.data.victim.avatar, jersey: this.data.victim.jersey,
       name: this.data.victim.name, nameColor: '#ff6b6b',
     };
