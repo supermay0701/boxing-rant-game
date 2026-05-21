@@ -1,4 +1,5 @@
 export const PUNCH_RANGE = 110;
+const CHASE_SPEED_PX_PER_FRAME = 0.06;  // very slow chase
 const WIND_UP_MS = 150;
 const STRIKE_MS  = 120;
 const RECOVER_MS = 250;
@@ -27,11 +28,21 @@ export class Puncher {
         const cdUsed = Math.min(remaining, this.cooldown);
         this.cooldown = Math.max(0, this.cooldown - remaining);
         remaining -= cdUsed;
-        if (this.cooldown === 0 && distance(this, victim) <= PUNCH_RANGE) {
+        const distToVictim = distance(this, victim);
+        if (this.cooldown === 0 && distToVictim <= PUNCH_RANGE) {
           this.state = 'wind_up';
           this.elapsed = 0;
           // remaining continues into wind_up this tick
         } else {
+          if (distToVictim > PUNCH_RANGE) {
+            // Chase: move slowly toward victim
+            const dx = victim.x - this.x;
+            const dy = victim.y - this.y;
+            const len = Math.sqrt(dx * dx + dy * dy) || 1;
+            const step = CHASE_SPEED_PX_PER_FRAME * (deltaMs / 16);
+            this.x += (dx / len) * step;
+            this.y += (dy / len) * step;
+          }
           break; // nothing more to do while idle and out of range / on cooldown
         }
       } else {
