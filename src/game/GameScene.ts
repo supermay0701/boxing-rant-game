@@ -151,6 +151,15 @@ export class GameScene {
     drawDamageOverlay(ctx, this.victim.x, this.victim.y - 50, this.victim.hitsTaken, this.timeMs);
     this.speech.draw(ctx);
     this.drawFloatingTexts(ctx);
+
+    // Watermark — baked into recording
+    ctx.save();
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('純屬娛樂 / For Entertainment Only', RING_SIZE - 10, RING_SIZE - 8);
+    ctx.restore();
   }
 
   private puncherRender() {
