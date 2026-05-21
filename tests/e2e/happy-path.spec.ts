@@ -13,6 +13,8 @@ test('full happy path: setup → game → replay', async ({ page }) => {
   // Puncher tab (active by default)
   await page.locator('#screen-setup input[type=text]').first().fill('小明');
   await page.locator('#screen-setup input[type=file]').nth(0).setInputFiles(AVATAR);
+  // Crop UI appears — confirm the crop to apply cartoon filter
+  await page.locator('.crop-confirm').first().click();
   await page.locator('input.talk').first().fill('雷包');
 
   // Wait for cartoon filter to complete (avatar processed → state updated)
@@ -22,6 +24,8 @@ test('full happy path: setup → game → replay', async ({ page }) => {
   await page.locator('.tab[data-tab=victim]').click();
   await page.locator('#screen-setup input[type=text]').first().fill('阿德');
   await page.locator('#screen-setup input[type=file]').nth(0).setInputFiles(AVATAR);
+  // Crop UI appears — confirm the crop
+  await page.locator('.crop-confirm').first().click();
 
   await page.waitForTimeout(500);
 

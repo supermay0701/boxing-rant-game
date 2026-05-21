@@ -275,20 +275,24 @@ html, body {
 
 /* Rage button */
 .rage-btn {
-  margin-top: 6px;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
   background: linear-gradient(135deg, #ff6600, var(--c-red));
   color: #fff;
   border: 2px solid var(--c-gold);
-  padding: 7px 18px;
-  border-radius: 24px;
+  padding: 10px 24px;
+  border-radius: 28px;
   font-family: var(--font-display);
-  font-size: 18px; letter-spacing: 0.08em;
+  font-size: 22px; letter-spacing: 0.08em;
   cursor: pointer;
   pointer-events: auto;
   animation: ragepulse 0.6s ease-in-out infinite;
-  box-shadow: 0 2px 12px rgba(255, 80, 0, 0.6), 0 0 0 1px rgba(245,158,11,0.3) inset;
+  box-shadow: 0 4px 20px rgba(255, 80, 0, 0.7), 0 0 0 1px rgba(245,158,11,0.4) inset;
+  white-space: nowrap;
 }
-.rage-btn:hover { transform: scale(1.05); }
+.rage-btn:hover { transform: translate(-50%, -50%) scale(1.08); }
 .rage-btn[hidden] { display: none; }
 @keyframes ragepulse {
   0%, 100% { box-shadow: 0 2px 12px rgba(255, 80, 0, 0.6); }
