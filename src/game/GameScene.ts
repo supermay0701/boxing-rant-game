@@ -219,8 +219,6 @@ export class GameScene {
       color: '#ff6b6b',
       size: 28,
     });
-
-    if (combo >= 10) this.activateRage('auto');
   }
 
   private advanceFloatingTexts(deltaMs: number): void {
