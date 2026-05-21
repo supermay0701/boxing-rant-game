@@ -172,9 +172,11 @@ export class AvatarUploader {
 
     cropContainer.innerHTML = `
       <div style="font-size:11px;color:#9ca3af;margin-bottom:6px;text-align:center;">拖曳圓圈到臉部，滑桿調大小</div>
-      <div style="position:relative;display:inline-block;line-height:0;margin:0 auto;display:flex;justify-content:center">
-        <canvas class="crop-photo" width="${dispW}" height="${dispH}" style="border-radius:4px;max-width:100%;"></canvas>
-        <canvas class="crop-overlay" width="${dispW}" height="${dispH}" style="position:absolute;top:0;left:0;cursor:grab;max-width:100%;"></canvas>
+      <div style="text-align:center;">
+        <span class="crop-canvas-wrap" style="position:relative;display:inline-block;line-height:0;">
+          <canvas class="crop-photo" width="${dispW}" height="${dispH}" style="border-radius:4px;max-width:100%;display:block;"></canvas>
+          <canvas class="crop-overlay" width="${dispW}" height="${dispH}" style="position:absolute;top:0;left:0;cursor:grab;width:100%;height:100%;"></canvas>
+        </span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
         <span style="font-size:10px;color:#9ca3af;white-space:nowrap;">圓圈大小</span>
