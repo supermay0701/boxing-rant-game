@@ -1,5 +1,5 @@
 export const PUNCH_RANGE = 110;
-const CHASE_SPEED_PX_PER_FRAME = 0.25;
+const CHASE_SPEED_PX_PER_FRAME = 0.5;
 const WIND_UP_MS = 150;
 const STRIKE_MS  = 120;
 const RECOVER_MS = 250;
