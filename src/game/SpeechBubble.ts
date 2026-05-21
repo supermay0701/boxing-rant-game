@@ -1,7 +1,7 @@
 import { TTS } from '../shared/TTS';
 
 const SHOW_MS = 1000;
-const TRIGGER_PROBABILITY = 0.3;
+const TRIGGER_PROBABILITY = 0.55;
 
 interface ActiveBubble {
   text: string;
