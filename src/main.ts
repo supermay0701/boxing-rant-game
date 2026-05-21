@@ -57,6 +57,25 @@ function showReplay() {
       location.reload();   // simplest reset
     },
     onRematch: () => { if (lastSetupData) startGame(lastSetupData); },
+    onSwap: () => {
+      if (!lastSetupData) return;
+      // Swap puncher and victim. Victim becomes puncher; inherit the old puncher's talks.
+      const swapped: SetupData = {
+        puncher: {
+          name: lastSetupData.victim.name,
+          avatar: lastSetupData.victim.avatar,
+          jersey: lastSetupData.victim.jersey,
+          talks: lastSetupData.puncher.talks,
+        },
+        victim: {
+          name: lastSetupData.puncher.name,
+          avatar: lastSetupData.puncher.avatar,
+          jersey: lastSetupData.puncher.jersey,
+        },
+        duration: lastSetupData.duration,
+      };
+      startGame(swapped);
+    },
   });
   showScreen('replay');
 }

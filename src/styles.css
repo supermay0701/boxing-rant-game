@@ -66,5 +66,6 @@ html, body { margin: 0; padding: 0; font-family: -apple-system, "Segoe UI", "Mic
 .stat-label { font-size: 11px; color: #aaa; text-transform: uppercase; }
 .stat-value { font-size: 22px; font-weight: 700; color: #ffd700; margin-top: 4px; }
 .action-row { display: flex; gap: 10px; margin-top: 16px; }
-.action-new, .action-rematch { flex: 1; background: #4a7cff; color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.action-new, .action-rematch, .action-swap { flex: 1; background: #4a7cff; color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
 .action-rematch { background: #c0392b; }
+.action-swap { background: #9c27b0; }
