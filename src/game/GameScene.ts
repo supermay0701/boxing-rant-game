@@ -37,6 +37,7 @@ export class GameScene {
   private recorder: Recorder;
   private hitTimestamps: number[] = [];
   private floatingTexts: { text: string; x: number; y: number; remainingMs: number; color: string; size: number }[] = [];
+  private wasVictimKO = false;
   private onFinish: (stats: GameStats, blob: Blob | null) => void;
 
   constructor(root: HTMLElement, data: SetupData, onFinish: (stats: GameStats, blob: Blob | null) => void) {
@@ -102,6 +103,19 @@ export class GameScene {
     this.timer.tick(deltaMs);
     this.puncher.update(deltaMs, { x: this.victim.x, y: this.victim.y });
     this.victim.update(deltaMs, { x: this.puncher.x, y: this.puncher.y });
+
+    if (this.victim.isKnockedDown && !this.wasVictimKO) {
+      this.floatingTexts.push({
+        text: 'K.O.!',
+        x: this.victim.x,
+        y: this.victim.y - 50,
+        remainingMs: 600,
+        color: '#ff3333',
+        size: 36,
+      });
+    }
+    this.wasVictimKO = this.victim.isKnockedDown;
+
     this.combo.tick(deltaMs);
     this.speech.tick(deltaMs);
 
@@ -149,9 +163,11 @@ export class GameScene {
     };
   }
   private victimRender() {
+    const isKO = this.victim.isKnockedDown;
     return {
       x: this.victim.x, y: this.victim.y, facing: -1 as const,
-      armAngleL: 2.5, armAngleR: 2.5,
+      armAngleL: isKO ? 1.5 : 2.5,
+      armAngleR: isKO ? -1.5 : 2.5,
       avatar: this.data.victim.avatar, jersey: this.data.victim.jersey,
       name: this.data.victim.name, nameColor: '#ff6b6b',
     };

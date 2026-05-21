@@ -4,11 +4,16 @@ const ATTRACTION_PX_PER_FRAME = 0.25;
 const NOISE_AMP = 60;
 const NOISE_FREQ = 0.5;
 const KNOCKBACK_PX = 30;
+const KO_DURATION_MS = 600;
+const HITS_PER_KO = 8;
 
 interface Point { x: number; y: number; }
 
 export class Victim {
   hitsTaken = 0;
+  isKnockedDown = false;
+  private koRemainingMs = 0;
+  private hitsSinceLastKO = 0;
   private baseX: number;
   private baseY: number;
   private bounds: Rect | null = null;
@@ -24,6 +29,14 @@ export class Victim {
 
   update(deltaMs: number, puncher: Point): void {
     this.timeMs += deltaMs;
+
+    if (this.isKnockedDown) {
+      this.koRemainingMs -= deltaMs;
+      if (this.koRemainingMs <= 0) {
+        this.isKnockedDown = false;
+      }
+      return;  // don't move, don't attract while KO'd
+    }
 
     // Attraction toward puncher
     const dx = puncher.x - this.baseX;
@@ -51,6 +64,7 @@ export class Victim {
 
   takeHit(puncher: Point): void {
     this.hitsTaken++;
+    this.hitsSinceLastKO++;
     const dx = this.baseX - puncher.x;
     const dy = this.baseY - puncher.y;
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -59,5 +73,11 @@ export class Victim {
     // Sync rendered position immediately so callers see the knockback
     this.x = this.baseX;
     this.y = this.baseY;
+
+    if (this.hitsSinceLastKO >= HITS_PER_KO) {
+      this.isKnockedDown = true;
+      this.koRemainingMs = KO_DURATION_MS;
+      this.hitsSinceLastKO = 0;
+    }
   }
 }
