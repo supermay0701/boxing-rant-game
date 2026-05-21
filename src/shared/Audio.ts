@@ -59,26 +59,53 @@ export class AudioPlayer {
     const now = ctx.currentTime;
 
     if (id === 'punch') {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.setValueAtTime(80, now);
-      osc.frequency.exponentialRampToValueAtTime(40, now + 0.1);
-      gain.gain.setValueAtTime(0.5, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.15);
+      // Thwack: 50ms noise burst with low-pass
+      const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+      const nd = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < nd.length; i++) nd[i] = (Math.random() * 2 - 1) * (1 - i / nd.length);
+      const noise = ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      const noiseFilter = ctx.createBiquadFilter();
+      noiseFilter.type = 'lowpass';
+      noiseFilter.frequency.value = 800;
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.value = 0.6;
+      noise.connect(noiseFilter).connect(noiseGain).connect(ctx.destination);
+      noise.start(now);
+
+      // Sub-bass thump: 150ms sine 90→35Hz
+      const sub = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      sub.frequency.setValueAtTime(90, now);
+      sub.frequency.exponentialRampToValueAtTime(35, now + 0.15);
+      subGain.gain.setValueAtTime(0.7, now);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      sub.connect(subGain).connect(ctx.destination);
+      sub.start(now);
+      sub.stop(now + 0.2);
     } else if (id === 'hit') {
+      // Square wave body
       const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      const oscGain = ctx.createGain();
       osc.type = 'square';
-      osc.frequency.setValueAtTime(220, now);
-      osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
-      gain.gain.setValueAtTime(0.3, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-      osc.connect(gain).connect(ctx.destination);
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.08);
+      oscGain.gain.setValueAtTime(0.35, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      osc.connect(oscGain).connect(ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.1);
+      osc.stop(now + 0.12);
+
+      // Click attack noise
+      const clickBuf = ctx.createBuffer(1, ctx.sampleRate * 0.02, ctx.sampleRate);
+      const cd = clickBuf.getChannelData(0);
+      for (let i = 0; i < cd.length; i++) cd[i] = (Math.random() * 2 - 1) * (1 - i / cd.length);
+      const click = ctx.createBufferSource();
+      click.buffer = clickBuf;
+      const clickGain = ctx.createGain();
+      clickGain.gain.value = 0.5;
+      click.connect(clickGain).connect(ctx.destination);
+      click.start(now);
     } else if (id === 'whoosh') {
       // White noise burst with band-pass sweep
       const bufferSize = ctx.sampleRate * 0.2;
