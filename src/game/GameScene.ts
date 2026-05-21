@@ -21,7 +21,7 @@ export interface GameStats {
 }
 
 export class GameScene {
-  private static RAGE_BUTTON_HITS = 15;
+  private static RAGE_BUTTON_HITS = 5;
 
   private canvas: HTMLCanvasElement;
   private container: HTMLElement;
