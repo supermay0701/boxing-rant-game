@@ -160,7 +160,7 @@ export class SetupPanel {
     const data: SetupData = {
       puncher: { name: this.state.puncherName, avatar: this.state.puncherAvatar!, jersey: this.state.puncherJersey!, talks: this.state.puncherTalks },
       victim:  { name: this.state.victimName,  avatar: this.state.victimAvatar!,  jersey: this.state.victimJersey! },
-      duration: 60_000,
+      duration: 30_000,
     };
     this.handler(data);
   }
