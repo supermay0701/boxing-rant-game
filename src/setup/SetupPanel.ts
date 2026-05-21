@@ -82,6 +82,7 @@ export class SetupPanel {
             <div class="tab${this.activeTab === 'victim'  ? ' active' : ''}" data-tab="victim">😵 被扁</div>
           </div>
           <div class="tab-content"></div>
+          <button class="swap-btn" type="button">🔄 角色互換</button>
           <button class="start-btn" disabled>🥊 開扁！</button>
           <div class="start-hint" style="font-size:11px;color:#ff6b6b;text-align:center;margin-top:6px"></div>
         </div>
@@ -101,6 +102,9 @@ export class SetupPanel {
 
     const startBtn = this.root.querySelector('.start-btn') as HTMLButtonElement;
     startBtn.addEventListener('click', () => this.tryStart());
+
+    const swapBtn = this.root.querySelector('.swap-btn') as HTMLButtonElement;
+    swapBtn.addEventListener('click', () => this.swapRoles());
   }
 
   private renderActiveTab(container: HTMLElement): void {
@@ -166,6 +170,25 @@ export class SetupPanel {
   }
 
   onStart(h: StartHandler): void { this.handler = h; }
+
+  private swapRoles(): void {
+    // Swap puncher and victim. Talks: keep on the new puncher (originally puncher's).
+    const newPuncherName   = this.state.victimName;
+    const newPuncherAvatar = this.state.victimAvatar;
+    const newPuncherJersey = this.state.victimJersey;
+    const keptTalks = this.state.puncherTalks;
+
+    this.state.victimName   = this.state.puncherName;
+    this.state.victimAvatar = this.state.puncherAvatar;
+    this.state.victimJersey = this.state.puncherJersey;
+
+    this.state.puncherName   = newPuncherName;
+    this.state.puncherAvatar = newPuncherAvatar;
+    this.state.puncherJersey = newPuncherJersey;
+    this.state.puncherTalks  = keptTalks;
+
+    this.render();
+  }
 }
 
 function bitmapToDataUrl(b: ImageBitmap): string {

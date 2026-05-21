@@ -36,6 +36,8 @@ html, body { margin: 0; padding: 0; font-family: -apple-system, "Segoe UI", "Mic
 .tab.active { color: #fff; border-bottom-color: #4a7cff; }
 .start-btn { background: linear-gradient(180deg, #e74c3c, #c0392b); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 700; width: 100%; margin-top: 8px; cursor: pointer; }
 .start-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.swap-btn { background: #9c27b0; color: #fff; border: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; width: 100%; margin-top: 8px; cursor: pointer; }
+.swap-btn:hover { background: #ad3fbe; }
 
 .game-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #0a0c12; position: relative; }
 #game-canvas { background: #000; image-rendering: pixelated; }
