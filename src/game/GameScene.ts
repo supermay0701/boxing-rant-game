@@ -187,7 +187,7 @@ export class GameScene {
       avatar: this.data.victim.avatar, jersey: this.data.victim.jersey,
       name: this.data.victim.name, nameColor: '#ff6b6b',
       rotation: isKO ? Math.PI / 2 : 0,
-      brokenArms: isKO,
+      brokenArms: this.victim.armsBroken,
     };
   }
 

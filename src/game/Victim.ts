@@ -12,6 +12,7 @@ interface Point { x: number; y: number; }
 export class Victim {
   hitsTaken = 0;
   isKnockedDown = false;
+  armsBroken = false;
   private koRemainingMs = 0;
   private hitsSinceLastKO = 0;
   private baseX: number;
@@ -78,6 +79,7 @@ export class Victim {
       this.isKnockedDown = true;
       this.koRemainingMs = KO_DURATION_MS;
       this.hitsSinceLastKO = 0;
+      this.armsBroken = true;  // persists after recovery
     }
   }
 }
