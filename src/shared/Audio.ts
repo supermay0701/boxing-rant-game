@@ -48,9 +48,9 @@ export class AudioPlayer {
   private getSynthCtx(): AudioContext {
     if (!this.synthCtx) {
       const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
-      this.synthCtx = new AC();
+      this.synthCtx = new AC() as AudioContext;
     }
-    return this.synthCtx;
+    return this.synthCtx as AudioContext;
   }
 
   private playSynth(id: SoundId): void {
