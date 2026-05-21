@@ -36,6 +36,7 @@ export class GameScene {
   private hud: HUD;
   private recorder: Recorder;
   private hitTimestamps: number[] = [];
+  private floatingTexts: { text: string; x: number; y: number; remainingMs: number; color: string; size: number }[] = [];
   private onFinish: (stats: GameStats, blob: Blob | null) => void;
 
   constructor(root: HTMLElement, data: SetupData, onFinish: (stats: GameStats, blob: Blob | null) => void) {
@@ -114,9 +115,18 @@ export class GameScene {
         this.speech.maybeTrigger({ x: this.puncher.x, y: this.puncher.y });
         audio.play('hit');
         this.lastResolvedStrikeId = this.puncher.currentStrikeId();
+        this.floatingTexts.push({
+          text: '+1',
+          x: this.victim.x,
+          y: this.victim.y - 30,
+          remainingMs: 700,
+          color: '#ffeb3b',
+          size: 18,
+        });
       }
     }
 
+    this.advanceFloatingTexts(deltaMs);
     this.hud.update(this.timer.remainingMs, this.victim.hitsTaken, this.combo.combo);
   }
 
@@ -126,6 +136,7 @@ export class GameScene {
     drawCharacter(ctx, this.victimRender());
     drawDamageOverlay(ctx, this.victim.x, this.victim.y - 50, this.victim.hitsTaken, this.timeMs);
     this.speech.draw(ctx);
+    this.drawFloatingTexts(ctx);
   }
 
   private puncherRender() {
@@ -146,8 +157,40 @@ export class GameScene {
     };
   }
 
-  private shake(_combo: number): void {
+  private shake(combo: number): void {
     this.container.classList.add('shake');
     setTimeout(() => this.container.classList.remove('shake'), 300);
+    this.floatingTexts.push({
+      text: `COMBO x${combo}!`,
+      x: this.victim.x,
+      y: this.victim.y - 60,
+      remainingMs: 1200,
+      color: '#ff6b6b',
+      size: 28,
+    });
+  }
+
+  private advanceFloatingTexts(deltaMs: number): void {
+    for (const ft of this.floatingTexts) {
+      ft.y -= 0.05 * deltaMs;
+      ft.remainingMs -= deltaMs;
+    }
+    this.floatingTexts = this.floatingTexts.filter(ft => ft.remainingMs > 0);
+  }
+
+  private drawFloatingTexts(ctx: CanvasRenderingContext2D): void {
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const ft of this.floatingTexts) {
+      const alpha = Math.min(1, ft.remainingMs / 600);
+      ctx.globalAlpha = alpha;
+      ctx.font = `bold ${ft.size}px sans-serif`;
+      ctx.fillStyle = '#000';
+      ctx.fillText(ft.text, ft.x + 2, ft.y + 2); // shadow
+      ctx.fillStyle = ft.color;
+      ctx.fillText(ft.text, ft.x, ft.y);
+    }
+    ctx.restore();
   }
 }
