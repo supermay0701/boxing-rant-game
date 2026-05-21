@@ -35,6 +35,21 @@ export class Victim {
       this.koRemainingMs -= deltaMs;
       if (this.koRemainingMs <= 0) {
         this.isKnockedDown = false;
+        // Recovery: push toward center of bounds to unstick from edge
+        if (this.bounds) {
+          const cx = this.bounds.x + this.bounds.width / 2;
+          const cy = this.bounds.y + this.bounds.height / 2;
+          const dx = cx - this.baseX;
+          const dy = cy - this.baseY;
+          const len = Math.sqrt(dx * dx + dy * dy) || 1;
+          this.baseX += (dx / len) * 60;
+          this.baseY += (dy / len) * 60;
+          // Re-clamp (in case 60px overshoots into different edge)
+          this.baseX = Math.min(Math.max(this.baseX, this.bounds.x), this.bounds.x + this.bounds.width);
+          this.baseY = Math.min(Math.max(this.baseY, this.bounds.y), this.bounds.y + this.bounds.height);
+          this.x = this.baseX;
+          this.y = this.baseY;
+        }
       }
       return;  // don't move, don't attract while KO'd
     }
