@@ -32,6 +32,7 @@ export class GameScene {
   private victim: Victim;
   private lastResolvedStrikeId = 0;
   private timeMs = 0;
+  private ended = false;
   private combo: ComboTracker;
   private timer: Timer;
   private speech: SpeechBubbleSystem;
@@ -80,6 +81,7 @@ export class GameScene {
   }
 
   private async finish(): Promise<void> {
+    this.ended = true;
     this.loop.stop();
     audio.stop('bgm');
     const result = await this.recorder.stop();
@@ -103,8 +105,10 @@ export class GameScene {
   }
 
   private update(deltaMs: number): void {
+    if (this.ended) return;
     this.timeMs += deltaMs;
     this.timer.tick(deltaMs);
+    if (this.ended) return;   // timer.tick may have triggered finish
     this.puncher.update(deltaMs, { x: this.victim.x, y: this.victim.y });
     this.victim.update(deltaMs, { x: this.puncher.x, y: this.puncher.y });
 
