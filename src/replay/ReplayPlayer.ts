@@ -15,7 +15,7 @@ export class ReplayPlayer {
     const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
 
     this.root.innerHTML = `
-      <video src="${this.url}" controls autoplay class="replay-video"></video>
+      <video src="${this.url}" controls class="replay-video"></video>
       <div class="replay-actions">
         <a class="replay-download" href="${this.url}" download="fight.${ext}">⬇ 下載 .${ext}</a>
       </div>
