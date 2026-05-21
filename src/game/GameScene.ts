@@ -11,6 +11,7 @@ import { SpeechBubbleSystem } from './SpeechBubble';
 import { HUD } from './HUD';
 import { Recorder } from './Recorder';
 import { audio } from '../shared/Audio';
+import { TTS } from '../shared/TTS';
 import type { SetupData } from '../setup/types';
 
 export interface GameStats {
@@ -65,6 +66,7 @@ export class GameScene {
 
     this.loop = new GameLoop(this.ctx, (d) => this.update(d), (ctx) => this.render(ctx));
 
+    audio.unsilence();
     audio.preload();
   }
 
@@ -82,6 +84,8 @@ export class GameScene {
 
   private async finish(): Promise<void> {
     this.ended = true;
+    audio.silence();
+    TTS.cancel();
     this.loop.stop();
     audio.stop('bgm');
     const result = await this.recorder.stop();

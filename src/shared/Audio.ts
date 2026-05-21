@@ -14,6 +14,7 @@ export class AudioPlayer {
   private failed: Set<SoundId> = new Set();
   private synthCtx?: AudioContext;
   private synthDest?: MediaStreamAudioDestinationNode;
+  private silenced = false;
 
   preload(): void {
     for (const id of Object.keys(SOURCES) as SoundId[]) {
@@ -32,7 +33,18 @@ export class AudioPlayer {
     }
   }
 
+  silence(): void {
+    this.silenced = true;
+    // Stop any currently playing Howler sounds
+    this.sounds.forEach(h => h.stop());
+  }
+
+  unsilence(): void {
+    this.silenced = false;
+  }
+
   play(id: SoundId): void {
+    if (this.silenced) return;
     if (this.failed.has(id)) {
       this.playSynth(id);
       return;
@@ -93,6 +105,7 @@ export class AudioPlayer {
   }
 
   private playSynth(id: SoundId): void {
+    if (this.silenced) return;
     if (id === 'bgm') return;  // BGM: just silence in fallback
     const ctx = this.getSynthCtx();
     const now = ctx.currentTime;
