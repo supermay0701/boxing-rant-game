@@ -62,7 +62,7 @@ export class GameScene {
     this.speech = new SpeechBubbleSystem(data.puncher.talks);
     this.hud = new HUD(this.container);
     this.hud.onRageClick(() => this.activateRage('manual'));
-    this.recorder = new Recorder(this.canvas, audio.getRecordingStream() ?? undefined);
+    this.recorder = new Recorder(this.canvas);  // video only — audio sync was unreliable
 
     this.loop = new GameLoop(this.ctx, (d) => this.update(d), (ctx) => this.render(ctx));
 
