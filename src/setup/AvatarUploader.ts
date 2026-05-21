@@ -67,4 +67,8 @@ export class AvatarUploader {
   }
 
   onChange(h: ChangeHandler): void { this.handler = h; }
+
+  setInitialBitmap(bitmap: ImageBitmap): void {
+    this.drawPreview(bitmap);
+  }
 }

@@ -116,6 +116,9 @@ export class SetupPanel {
     const avatarField = new AvatarUploader(avatarRoot);
     const jerseyField = new JerseyPicker(jerseyRoot);
 
+    const existingAvatar = tab === 'puncher' ? this.state.puncherAvatar : this.state.victimAvatar;
+    if (existingAvatar) avatarField.setInitialBitmap(existingAvatar);
+
     nameField.onChange(v => {
       if (tab === 'puncher') this.state.puncherName = v; else this.state.victimName = v;
       this.updateStartButton();
