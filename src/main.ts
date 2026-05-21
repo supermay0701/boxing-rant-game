@@ -1,4 +1,5 @@
 import { GameStore } from './shared/GameStore';
+import { version } from '../package.json';
 import { SetupPanel } from './setup/SetupPanel';
 import { GameScene, type GameStats as RawStats } from './game/GameScene';
 import { ReplayScreen } from './replay/ReplayScreen';
@@ -8,6 +9,12 @@ import { Recorder } from './game/Recorder';
 
 export type Screen = 'setup' | 'game' | 'replay';
 export const store = new GameStore();
+
+// Version badge
+const vBadge = document.createElement('div');
+vBadge.id = 'version-badge';
+vBadge.textContent = `v${version}`;
+document.body.appendChild(vBadge);
 
 function showCompatBannerIfNeeded() {
   const banner = document.getElementById('compat-banner');
